@@ -6,6 +6,8 @@ import urllib.error
 import subprocess
 import platform
 from pathlib import Path
+from datetime import datetime, timezone
+from zoneinfo import ZoneInfo
 
 # ANSI colors
 BLUE = "\033[34m"
@@ -114,12 +116,33 @@ def format_usage(usage_data: dict) -> str:
     weekly_usage = usage_data.get("seven_day", {})
 
     five_hour_percentage = five_hour_usage.get("utilization", 0) or 0
+    five_hour_reset = five_hour_usage.get("resets_at", '2000-01-01T00:00:00.065788+00:00')
     weekly_percentage = weekly_usage.get("utilization", 0) or 0
+    weekly_reset = weekly_usage.get("resets_at", '2000-01-01T00:00:00.065788+00:00')
 
     five_hour_str = f"{get_usage_color(five_hour_percentage)}{five_hour_percentage:.0f}%{RESET}"
+    five_hour_reset_str = f"{time_until_reset(five_hour_reset)}"
     weekly_str = f"{get_usage_color(weekly_percentage)}{weekly_percentage:.0f}%{RESET}"
+    weekly_reset_str = f"{format_resets_at(weekly_reset)}"
 
-    return f"5h: {five_hour_str} | 7d: {weekly_str}"
+    return f"5h: {five_hour_str} ({five_hour_reset_str}) | 7d: {weekly_str} ({weekly_reset_str})"
+
+def format_resets_at(time_str):
+    dt = datetime.fromisoformat(time_str)
+    local_dt = dt.astimezone(ZoneInfo("Europe/Athens"))
+    return local_dt.strftime("%H:%M %d/%m")
+
+def time_until_reset(time):
+    target = datetime.fromisoformat(time)
+    now = datetime.now(timezone.utc)
+    delta = target - now
+
+    if delta.total_seconds() > 0:
+        hours, remainder = divmod(int(delta.total_seconds()), 3600)
+        minutes, seconds = divmod(remainder, 60)
+        return(f"{hours}h {minutes}m")
+    else:
+        return("N/A")
 
 def get_usage_color(percentage: float) -> str:
     if percentage >= USAGE_THRESHOLD_HIGH:

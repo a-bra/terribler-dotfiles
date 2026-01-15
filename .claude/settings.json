@@ -1,5 +1,5 @@
 {
-	"cleanupPeriodDays": 999,
+  "cleanupPeriodDays": 999,
   "permissions": {
     "allow": [
       "List_recent_entries",
@@ -20,5 +20,6 @@
     "episodic-memory@superpowers-marketplace": true
   },
   "alwaysThinkingEnabled": true,
-  "promptSuggestionEnabled": false
+  "promptSuggestionEnabled": false,
+  "model": "sonnet"
 }

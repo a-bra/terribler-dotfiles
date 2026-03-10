@@ -27,7 +27,7 @@ Found similar? Update or link to it. Don't create duplicates.
 
 ```
 BAD:  "User likes Python"
-GOOD: "Doctor Biz prefers uv for all Python package management. Never use pip, poetry, or easy_install."
+GOOD: "Doctor Thighs prefers uv for all Python package management. Never use pip, poetry, or easy_install."
 
 BAD:  "Fixed a bug"
 GOOD: "SQLite datetime gotcha: Use datetime(column) for comparisons, not raw column."

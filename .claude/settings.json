@@ -11,6 +11,7 @@
     "deny": [],
     "ask": []
   },
+  "model": "opus",
   "statusLine": {
     "type": "command",
     "command": "python3 ~/.claude/statusline.py",
@@ -21,5 +22,5 @@
   },
   "alwaysThinkingEnabled": true,
   "promptSuggestionEnabled": false,
-  "model": "sonnet"
+  "autoUpdatesChannel": "latest"
 }

@@ -26,16 +26,14 @@
 ## Starting a new project
 
 Whenever you build out a new project and specifically start a new CLAUDE.md - you should pick a name for yourself, and a name for me (some kind of derivative of Shou-dawg). This is very important
-
-- When picking names it should be really unhinged, and super fun. not necessarily code related. think 90s, dinosaurs, and something gen z and millenials would laugh at
+When picking names it should be really unhinged, and super fun. not necessarily code related. think 90s, dinosaurs, and something gen z and millenials would laugh at
 
 # Writing code
 
 - CRITICAL: NEVER USE --no-verify WHEN COMMITTING CODE
 - We prefer simple, clean, maintainable solutions over clever or complex ones, even if the latter are more concise or performant. Readability and maintainability are primary concerns.
-- Reuse patterns already in the code, such as loggers, exceptions handlers, etc. Code style must be consistent through a project.
-- If there are inconsistencies, ask me what we should do instead of adding yet another way or choosing at random.
-
+- Always check if something reusable is implemented already instead of creating yet another utility class. If it's badly written mention it and ask me whether we want to fix it now or keep it for later.
+- When entering plan mode, let's do it together interactively. It's faster as I may have outside context I wasn't able to share already, and you may have noticed things related to the task at hand that I missed.
 
 ## 🟢 Autonomous Actions (Proceed immediately)
 - Fix failing tests, linting errors, type errors
@@ -60,7 +58,7 @@ Whenever you build out a new project and specifically start a new CLAUDE.md - yo
 - NEVER make code changes that aren't directly related to the task you're currently assigned. If you notice something that should be fixed but is unrelated to your current task, document it in a new issue instead of fixing it immediately.
 - NEVER remove code comments unless you can prove that they are actively false. Comments are important documentation and should be preserved even if they seem redundant or unnecessary to you.
 - All code files should start with a brief 2 line comment explaining what the file does. Each line of the comment should start with the string "ABOUTME: " to make it easy to grep for.
-- When writing comments, avoid referring to temporal context about refactors or recent changes. Comments should be evergreen and describe the code as it is, not how it evolved or was recently changed. There is also no need to state the obvious, or emphasize a change that is self-descriptive already.
+- When writing comments, avoid referring to temporal context about refactors or recent changes. Comments should be evergreen and describe the code as it is, not how it evolved or was recently changed. There is also no need to state the obvious, or emphasize a change that is self-descriptive.
 - NEVER implement a mock mode for testing or for any purpose. We always use real data and real APIs, never mock implementations.
 - When you are trying to fix a bug or compilation error or any other issue, YOU MUST NEVER throw away the old implementation and rewrite without expliict permission from the user. If you are going to do this, YOU MUST STOP and get explicit permission from the user.
 - NEVER name things as 'improved' or 'new' or 'enhanced', etc. Code naming should be evergreen. What is new someday will be "old" someday.
@@ -90,12 +88,6 @@ Whenever you build out a new project and specifically start a new CLAUDE.md - yo
 - Run the test to confirm success
 - Refactor code to improve design while keeping tests green
 - Repeat the cycle for each new feature or bugfix
-
-# Summer Work Ethic
-
-- Its summer, so work efficiently to maximize vacation time
-- Focus on getting tasks done quickly and effectively
-- Remember: Working hard now means more time for vacation later
 
 # Thoughts on git
 
@@ -160,11 +152,11 @@ Remember: Quality tools are guardrails that help you, not barriers that block yo
 # Other important things
 
 - Timeout and gtimeout are often not installed, do not try and use them
-- When searching or modifying code, you should use ast-grep (sg). It is way better than grep, ripgrep, ag, sed, or regex-only tools.
-  ast-grep is superior because it matches against the abstract syntax tree (AST) and allows safe, language-aware queries and rewrites.
-- Always prefer sg for code analysis, queries, or refactoring tasks.
+- When searching or modifying code, you must use `ast-grep` (sg). It is way better than `grep`, `ripgrep`, `ag`, `sed`, or regex-only tools. `ast-grep` is superior because it matches against the abstract syntax tree (AST) and allows safe, language-aware queries and rewrites.
+- Always prefer `sg` for code analysis, queries, or refactoring tasks.
 - NEVER disable functionality instead of fixing the root cause problem
 - NEVER claim something is "working" when functionality is disabled or broken
+- If you discover an unrelated bug, please fix it. Don't say "everything is done, EXCEPT there is a bug"
 - Humuhumu means "I see, thanks!"
 
 ## Templating
@@ -172,7 +164,6 @@ Remember: Quality tools are guardrails that help you, not barriers that block yo
 - NEVER create duplicate templates/files to work around issues - fix the original
 - ALWAYS identify and fix the root cause of template/compilation errors
 - ALWAYS use one shared template instead of maintaining duplicates
-- WHEN encountering character literal errors in templates, move JavaScript to static files
 - WHEN facing template issues, debug the actual problem rather than creating workarounds
 
 Problem-Solving Approach:
@@ -182,8 +173,3 @@ Problem-Solving Approach:
 - USE proper debugging to find root causes
 - AVOID shortcuts that break user experience
 - When choosing port numbers for new services, make them thematically related and memorable (leet-speak, pop culture, or project-relevant numbers). Keep infrastructure defaults boring (NATS, databases, etc.). The goal is to cleanly avoid all regularly used ports (8080, 8081, etc)
-
-# MCP Servers Quick Reference
-
-When I say a server name, here's what I mean:
-- **private-journal/journal**: Claude's private reflection space (mcp__private-journal__*)

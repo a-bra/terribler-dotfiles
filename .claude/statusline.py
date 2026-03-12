@@ -17,6 +17,7 @@ GREEN = "\033[32m"
 YELLOW = "\033[33m"
 RED = "\033[31m"
 CYAN = "\033[36m"
+PURPLE = "\033[35m"
 RESET = "\033[0m"
 
 USAGE_API_URL = "https://api.anthropic.com/api/oauth/usage"
@@ -50,7 +51,8 @@ test_data = '''
     "monthly_limit": 2000,
     "used_credits": 0.0,
     "utilization": null
-  }
+  },
+  "version": 2.1.777",
 }
 '''
 def main():
@@ -72,13 +74,13 @@ def main():
     access_token = get_access_token()
 
     if access_token:
-        usage_data = fetch_usage(access_token)
+        usage_data = fetch_usage(access_token, data['version'])
         usage_str = format_usage(usage_data)
     else:
         usage_str = f"{RED}No credentials{RESET}"
 
     line = f"{BLUE}{model}{RESET} | {usage_str}"
-    line2 = f"cwd: {current_directory} | {git_status}"
+    line2 = f"cwd: {CYAN}{current_directory}{RESET} | {git_status}"
 
     print(line)
     print(line2)
@@ -155,7 +157,7 @@ def write_cache(data: dict) -> None:
         pass
 
 
-def fetch_usage(access_token: str) -> dict | None:
+def fetch_usage(access_token: str, version) -> dict | None:
     """Fetch usage data from Anthropic API, using a file cache to avoid rate limits."""
     cached = read_cache()
     if cached is not None:
@@ -168,6 +170,7 @@ def fetch_usage(access_token: str) -> dict | None:
                 headers={
                     "Authorization": f"Bearer {access_token}",
                     "Content-Type": "application/json",
+                    "User-Agent": f"claude-code/{version}",
                     "anthropic-beta": "oauth-2025-04-20",
                     },
                 )
@@ -241,7 +244,7 @@ def get_git_status(data):
         git_status = f"{GREEN}+{staged}{RESET}" if staged else ""
         git_status += f"{YELLOW}~{modified}{RESET}" if modified else ""
 
-        return f"{branch} {git_status}"
+        return f"{PURPLE} {branch}{RESET} {git_status}"
     except:
         return "no git info"
 

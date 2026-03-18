@@ -21,7 +21,7 @@
 - Before starting complex tasks, search the journal for relevant past experiences and lessons learned
 - Document architectural decisions and their outcomes for future reference
 - Track patterns in user feedback to improve collaboration over time
-- When you notice something that should be fixed but is unrelated to your current task, document it in your journal rather than fixing it immediately
+- When you notice something that should be fixed but is unrelated to your current task, document it(in your journal, a new issue etc) rather than fixing it immediately and get back to it when done with the current task
 
 ## Starting a new project
 
@@ -30,9 +30,11 @@ When picking names it should be really unhinged, and super fun. not necessarily 
 
 # Writing code
 
-- CRITICAL: NEVER USE --no-verify WHEN COMMITTING CODE
 - We prefer simple, clean, maintainable solutions over clever or complex ones, even if the latter are more concise or performant. Readability and maintainability are primary concerns.
 - Always check if something reusable is implemented already instead of creating yet another utility class. If it's badly written mention it and ask me whether we want to fix it now or keep it for later.
+- When modifying code, match the style and formatting of surrounding code, even if it differs from standard style guides. Consistency within a file is more important than strict adherence to external standards.
+- All code files should start with a brief 2 line comment explaining what the file does. Each line of the comment should start with the string "ABOUTME: " to make it easy to grep for.
+- When writing comments, avoid referring to temporal context about refactors or recent changes. Comments should be evergreen and describe the code as it is, not how it evolved or was recently changed. There is also no need to state the obvious, or emphasize a change that is self-descriptive.
 - When entering plan mode, let's do it together interactively. It's faster as I may have outside context I wasn't able to share already, and you may have noticed things related to the task at hand that I missed.
 
 ## 🟢 Autonomous Actions (Proceed immediately)
@@ -54,11 +56,8 @@ When picking names it should be really unhinged, and super fun. not necessarily 
 - Changing core business logic
 - Security-related modifications
 - Anything that could cause data loss
-- When modifying code, match the style and formatting of surrounding code, even if it differs from standard style guides. Consistency within a file is more important than strict adherence to external standards.
-- NEVER make code changes that aren't directly related to the task you're currently assigned. If you notice something that should be fixed but is unrelated to your current task, document it in a new issue instead of fixing it immediately.
+- NEVER make code changes that aren't directly related to the task you're currently assigned. If you notice something that should be fixed but is unrelated to your current task, document it(in your journal, a new issue etc) rather than fixing it immediately and get back to it when done with the current task
 - NEVER remove code comments unless you can prove that they are actively false. Comments are important documentation and should be preserved even if they seem redundant or unnecessary to you.
-- All code files should start with a brief 2 line comment explaining what the file does. Each line of the comment should start with the string "ABOUTME: " to make it easy to grep for.
-- When writing comments, avoid referring to temporal context about refactors or recent changes. Comments should be evergreen and describe the code as it is, not how it evolved or was recently changed. There is also no need to state the obvious, or emphasize a change that is self-descriptive.
 - NEVER implement a mock mode for testing or for any purpose. We always use real data and real APIs, never mock implementations.
 - When you are trying to fix a bug or compilation error or any other issue, YOU MUST NEVER throw away the old implementation and rewrite without expliict permission from the user. If you are going to do this, YOU MUST STOP and get explicit permission from the user.
 - NEVER name things as 'improved' or 'new' or 'enhanced', etc. Code naming should be evergreen. What is new someday will be "old" someday.
@@ -69,7 +68,7 @@ When picking names it should be really unhinged, and super fun. not necessarily 
 
 # Testing
 
-- Tests MUST cover the functionality being implemented.
+- Tests MUST cover the functionality being implemented .
 - NEVER ignore the output of the system or the tests - Logs and messages often contain CRITICAL information.
 - TEST OUTPUT MUST BE PRISTINE TO PASS
 - If the logs are supposed to contain errors, capture and test it.
@@ -101,8 +100,7 @@ When pre-commit hooks fail, you MUST follow this exact sequence before any commi
 4. Apply the fix and re-run hooks
 5. Only proceed with commit after all hooks pass
 
-NEVER commit with failing hooks. NEVER use --no-verify. If you cannot fix the hooks, you
-must ask the user for help rather than bypass them.
+NEVER commit with failing hooks. If you cannot fix the hooks, you must ask the user for help rather than bypass them.
 
 2. Explicit Git Flag Prohibition
 
@@ -114,8 +112,7 @@ Before using ANY git flag, you must:
 - Confirm it's not on the forbidden list
 - Get explicit user permission for any bypass flags
 
-If you catch yourself about to use a forbidden flag, STOP immediately and follow the
-pre-commit failure protocol instead.
+If you catch yourself about to use a forbidden flag, STOP immediately and follow the pre-commit failure protocol instead.
 
 3. Pressure Response Protocol
 
@@ -156,10 +153,10 @@ Remember: Quality tools are guardrails that help you, not barriers that block yo
 - Always prefer `sg` for code analysis, queries, or refactoring tasks.
 - NEVER disable functionality instead of fixing the root cause problem
 - NEVER claim something is "working" when functionality is disabled or broken
-- If you discover an unrelated bug, please fix it. Don't say "everything is done, EXCEPT there is a bug"
+- If you discover an unrelated bug, please document it and fix it when done with the current bug. Don't say "everything is done, EXCEPT there is a bug"
 - Humuhumu means "I see, thanks!"
 
-## Templating
+# Templating
 
 - NEVER create duplicate templates/files to work around issues - fix the original
 - ALWAYS identify and fix the root cause of template/compilation errors

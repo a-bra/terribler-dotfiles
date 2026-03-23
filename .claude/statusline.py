@@ -8,7 +8,7 @@ import subprocess
 import platform
 from time import sleep
 from pathlib import Path
-from datetime import datetime, timezone
+from datetime import datetime as dt, timezone
 from zoneinfo import ZoneInfo
 
 # ANSI colors
@@ -25,36 +25,73 @@ USAGE_THRESHOLD_HIGH = 80
 USAGE_THRESHOLD_MEDIUM = 50
 CREDENTIALS_PATH = Path.home() / ".claude" / ".credentials.json"
 CACHE_PATH = Path.home() / ".claude" / ".statusline_cache.json"
-CACHE_TTL_SECONDS = int(os.environ.get("STATUSLINE_CACHE_TTL", "15"))
+CACHE_TTL_SECONDS = int(os.environ.get("STATUSLINE_CACHE_TTL", "30"))
 
 
 test_data = '''
 {
+  "cwd": "/current/working/directory",
+  "session_id": "abc123...",
+  "transcript_path": "/path/to/transcript.jsonl",
+  "model": {
+    "id": "claude-opus-4-6",
+    "display_name": "Opus"
+  },
   "workspace": {
-    "current_dir": "/home/abravakis/dev"
+    "current_dir": "/current/working/directory",
+    "project_dir": "/original/project/directory"
   },
-  "five_hour": {
-    "utilization": 56.0,
-    "resets_at": "2026-03-06T18:00:01.145640+00:00"
+  "version": "1.0.80",
+  "output_style": {
+    "name": "default"
   },
-  "seven_day": {
-    "utilization": 8.0,
-    "resets_at": "2026-03-13T13:00:01.145662+00:00"
+  "cost": {
+    "total_cost_usd": 0.01234,
+    "total_duration_ms": 45000,
+    "total_api_duration_ms": 2300,
+    "total_lines_added": 156,
+    "total_lines_removed": 23
   },
-  "seven_day_oauth_apps": null,
-  "seven_day_opus": null,
-  "seven_day_sonnet": null,
-  "seven_day_cowork": null,
-  "iguana_necktie": null,
-  "extra_usage": {
-    "is_enabled": true,
-    "monthly_limit": 2000,
-    "used_credits": 0.0,
-    "utilization": null
+  "context_window": {
+    "total_input_tokens": 15234,
+    "total_output_tokens": 4521,
+    "context_window_size": 200000,
+    "used_percentage": 8,
+    "remaining_percentage": 92,
+    "current_usage": {
+      "input_tokens": 8500,
+      "output_tokens": 1200,
+      "cache_creation_input_tokens": 5000,
+      "cache_read_input_tokens": 2000
+    }
   },
-  "version": 2.1.777",
+  "exceeds_200k_tokens": false,
+  "rate_limits": {
+    "five_hour": {
+      "used_percentage": 23.5,
+      "resets_at": 1788425600
+    },
+    "seven_day": {
+      "used_percentage": 41.2,
+      "resets_at": 1788857600
+    }
+  },
+  "vim": {
+    "mode": "NORMAL"
+  },
+  "agent": {
+    "name": "security-reviewer"
+  },
+  "worktree": {
+    "name": "my-feature",
+    "path": "/path/to/.claude/worktrees/my-feature",
+    "branch": "worktree-my-feature",
+    "original_cwd": "/path/to/project",
+    "original_branch": "main"
+  }
 }
 '''
+
 def main():
     try:
         raw = sys.stdin.read()
@@ -66,122 +103,16 @@ def main():
 
     # Extract fields
     current_directory = os.path.basename(data['workspace']['current_dir'])
-    print(str(current_directory))
     model = data.get("model", {}).get("display_name", "")
     git_status = get_git_status(data)
 
-    # Fetch usage from API
-    access_token = get_access_token()
-
-    if access_token:
-        usage_data = fetch_usage(access_token, data['version'])
-        usage_str = format_usage(usage_data)
-    else:
-        usage_str = f"{RED}No credentials{RESET}"
+    usage_str = format_usage(data['rate_limits'])
 
     line = f"{BLUE}{model}{RESET} | {usage_str}"
     line2 = f"cwd: {CYAN}{current_directory}{RESET} | {git_status}"
 
     print(line)
     print(line2)
-
-
-def get_access_token() -> str | None:
-    """Retrieve the access token based on the platform."""
-    system = platform.system()
-
-    if system == "Darwin":  # macOS
-        return get_access_token_macos()
-    elif system == "Linux":
-        return get_access_token_linux()
-    else:
-        return None # Windows not supported
-
-
-def get_access_token_macos() -> str | None:
-    """Retrieve access token from macOS Keychain."""
-    try:
-        result = subprocess.run(
-                ["security", "find-generic-password", "-s", "Claude Code-credentials", "-w"],
-                capture_output=True,
-                text=True,
-                timeout=2,
-                check=True
-                )
-        credentials = result.stdout.strip()
-        if credentials:
-            creds = json.loads(credentials)
-            return creds.get("claudeAiOauth", {}).get("accessToken")
-        return None
-    except (subprocess.CalledProcessError, subprocess.TimeoutExpired, json.JSONDecodeError, KeyError):
-        return None
-
-
-def get_access_token_linux() -> str | None:
-    """Read access token from credentials file on Linux."""
-    try:
-        with open(CREDENTIALS_PATH) as f:
-            creds = json.load(f)
-        return creds.get("claudeAiOauth", {}).get("accessToken")
-    except (FileNotFoundError, json.JSONDecodeError, KeyError):
-        return None
-
-
-def read_cache() -> dict | None:
-    """Read cached usage data if it exists and hasn't expired."""
-    try:
-        with open(CACHE_PATH) as f:
-            cache = json.load(f)
-        cached_at = cache.get("cached_at", 0)
-        now = datetime.now(timezone.utc).timestamp()
-        data = cache.get("data")
-        if now - cached_at > CACHE_TTL_SECONDS:
-            data['stale'] = True
-
-        return data
-    except (FileNotFoundError, json.JSONDecodeError, KeyError):
-        pass
-    return None
-
-
-def write_cache(data: dict) -> None:
-    """Write usage data to cache with current timestamp."""
-    cache = {
-            "cached_at": datetime.now(timezone.utc).timestamp(),
-            "data": data,
-            }
-    try:
-        with open(CACHE_PATH, "w") as f:
-            json.dump(cache, f)
-    except OSError:
-        pass
-
-
-def fetch_usage(access_token: str, version) -> dict | None:
-    """Fetch usage data from Anthropic API, using a file cache to avoid rate limits."""
-    cached = read_cache()
-    if cached is not None:
-        if cached.get('stale', False) == False:
-            return cached
-
-    try:
-        req = urllib.request.Request(
-                USAGE_API_URL,
-                headers={
-                    "Authorization": f"Bearer {access_token}",
-                    "Content-Type": "application/json",
-                    "User-Agent": f"claude-code/{version}",
-                    "anthropic-beta": "oauth-2025-04-20",
-                    },
-                )
-        with urllib.request.urlopen(req, timeout=5) as resp:
-            sleep(3)
-            data = json.loads(resp.read().decode())
-        write_cache(data)
-        return data
-    except (urllib.error.URLError, json.JSONDecodeError, TimeoutError) as e:
-        return cached
-
 
 def format_usage(usage_data: dict) -> str:
     """Format usage data for statusline display."""
@@ -192,10 +123,10 @@ def format_usage(usage_data: dict) -> str:
     five_hour_usage = usage_data.get("five_hour", {})
     weekly_usage = usage_data.get("seven_day", {})
 
-    five_hour_percentage = five_hour_usage.get("utilization", 0) or 0
-    five_hour_reset = five_hour_usage.get("resets_at", '2000-01-01T00:00:00.065788+00:00')
-    weekly_percentage = weekly_usage.get("utilization", 0) or 0
-    weekly_reset = weekly_usage.get("resets_at", '2000-01-01T00:00:00.065788+00:00')
+    five_hour_percentage = five_hour_usage.get("used_percentage", 0) or 0
+    five_hour_reset = five_hour_usage.get("resets_at", '1738425600')
+    weekly_percentage = weekly_usage.get("used_percentage", 0) or 0
+    weekly_reset = weekly_usage.get("resets_at", '1738425600')
 
     five_hour_str = f"{get_usage_color(five_hour_percentage)}{five_hour_percentage:.0f}%{RESET}"
     five_hour_reset_str = f"{time_until_reset(five_hour_reset)}"
@@ -209,13 +140,13 @@ def format_usage(usage_data: dict) -> str:
     return statusline
 
 def format_resets_at(time_str):
-    dt = datetime.fromisoformat(time_str)
-    local_dt = dt.astimezone(ZoneInfo("Europe/Athens"))
-    return local_dt.strftime("%H:%M %d/%m")
+    dtm = dt.fromtimestamp(time_str, timezone.utc)
+    local_dtm = dtm.astimezone(ZoneInfo("Europe/Athens"))
+    return local_dtm.strftime("%H:%M %d/%m")
 
 def time_until_reset(time):
-    target = datetime.fromisoformat(time)
-    now = datetime.now(timezone.utc)
+    target = dt.fromtimestamp(time, timezone.utc)
+    now = dt.now(timezone.utc)
     delta = target - now
 
     if delta.total_seconds() > 0:

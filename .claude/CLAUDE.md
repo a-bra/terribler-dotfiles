@@ -22,6 +22,7 @@
 - Document architectural decisions and their outcomes for future reference
 - Track patterns in user feedback to improve collaboration over time
 - When you notice something that should be fixed but is unrelated to your current task, document it(in your journal, a new issue etc) rather than fixing it immediately and get back to it when done with the current task
+- Document design decisions and their rationale in a persistent DESIGN.md so future sessions don't re-discover the same trade-offs.
 
 ## Starting a new project
 
@@ -36,7 +37,16 @@ When picking names it should be really unhinged, and super fun. not necessarily 
 - All code files should start with a brief 2 line comment explaining what the file does. Each line of the comment should start with the string "ABOUTME: " to make it easy to grep for.
 - State assumptions before implementing; if multiple interpretations exist, surface them.
 - When writing comments, avoid referring to temporal context about refactors or recent changes. Comments should be evergreen and describe the code as it is, not how it evolved or was recently changed. There is also no need to state the obvious, or emphasize a change that is self-descriptive.
-- When entering plan mode, let's do it together interactively. It's faster as I may have outside context I wasn't able to share already, and you may have noticed things related to the task at hand that I missed.
+- Discuss the approach conversationally before entering plan mode - it's faster, back-and-forth catches misunderstandings cheaper, I may have outside context I wasn't able to share already, and you may have noticed things related to the task at hand that I missed.
+- When investigating a bug, run the failing code/tests first before reading source - a 5-second test run beats 10 minutes of theorizing.
+- NEVER make code changes that aren't directly related to the task you're currently assigned. If you notice something that should be fixed but is unrelated to your current task, document it(in your journal, a new issue etc) rather than fixing it immediately and get back to it when done with the current task.
+- NEVER remove code comments unless you can prove that they are actively false. Comments are important documentation and should be preserved even if they seem redundant or unnecessary to you.
+- NEVER implement a mock mode for testing or for any purpose. We always use real data and real APIs, never mock implementations.
+- NEVER throw away an old implementation and rewrite without explicit permission. If you are going to do this, YOU MUST STOP and ask first.
+- NEVER name things as 'improved' or 'new' or 'enhanced', etc. Code naming should be evergreen. What is new someday will be "old" someday.
+- NEVER disable functionality instead of fixing the root cause problem.
+- NEVER claim something is "working" when functionality is disabled or broken.
+- If you discover an unrelated bug, please document it and fix it when done with the current bug. Don't say "everything is done, EXCEPT there is a bug"
 
 ## 🟢 Autonomous Actions (Proceed immediately)
 - Fix failing tests, linting errors, type errors
@@ -57,19 +67,25 @@ When picking names it should be really unhinged, and super fun. not necessarily 
 - Changing core business logic
 - Security-related modifications
 - Anything that could cause data loss
-- NEVER make code changes that aren't directly related to the task you're currently assigned. If you notice something that should be fixed but is unrelated to your current task, document it(in your journal, a new issue etc) rather than fixing it immediately and get back to it when done with the current task
-- NEVER remove code comments unless you can prove that they are actively false. Comments are important documentation and should be preserved even if they seem redundant or unnecessary to you.
-- NEVER implement a mock mode for testing or for any purpose. We always use real data and real APIs, never mock implementations.
-- When you are trying to fix a bug or compilation error or any other issue, YOU MUST NEVER throw away the old implementation and rewrite without expliict permission from the user. If you are going to do this, YOU MUST STOP and get explicit permission from the user.
-- NEVER name things as 'improved' or 'new' or 'enhanced', etc. Code naming should be evergreen. What is new someday will be "old" someday.
 
 # Getting help
 
 - If you're having trouble with something, it's ok to stop and ask for help. Especially if it's something I might be better at.
 
+## Learning from failures
+
+When encountering tool failures (biome, ruff, pytest, etc.):
+
+- Treat each failure as a learning opportunity, not an obstacle
+- Research the specific error before attempting fixes
+- Explain what you learned about the tool/codebase
+- Build competence with development tools rather than avoiding them
+
+Quality tools are guardrails that help you, not barriers that block you.
+
 # Testing
 
-- Tests MUST cover the functionality being implemented .
+- Tests MUST cover the functionality being implemented.
 - NEVER ignore the output of the system or the tests - Logs and messages often contain CRITICAL information.
 - TEST OUTPUT MUST BE PRISTINE TO PASS
 - If the logs are supposed to contain errors, capture and test it.
@@ -89,64 +105,25 @@ When picking names it should be really unhinged, and super fun. not necessarily 
 - Refactor code to improve design while keeping tests green
 - Repeat the cycle for each new feature or bugfix
 
-# Thoughts on git
+# Git
 
 Use git branches for individual work. If we are using multiple subagents that may step on each other's toes, use worktrees.
 
-1. Mandatory Pre-Commit Failure Protocol
+## Pre-commit hooks
 
-When pre-commit hooks fail, you MUST follow this exact sequence before any commit attempt:
+FORBIDDEN GIT FLAGS: --no-verify, --no-hooks, --no-pre-commit-hook
 
-1. Read the complete error output aloud (explain what you're seeing)
+NEVER commit with failing hooks. If you cannot fix the hooks, ask for help rather than bypass them.
+
+When pre-commit hooks fail, follow this sequence:
+
+1. Read the complete error output (explain what you're seeing)
 2. Identify which tool failed (biome, ruff, tests, etc.) and why
 3. Explain the fix you will apply and why it addresses the root cause
 4. Apply the fix and re-run hooks
 5. Only proceed with commit after all hooks pass
 
-NEVER commit with failing hooks. If you cannot fix the hooks, you must ask the user for help rather than bypass them.
-
-2. Explicit Git Flag Prohibition
-
-FORBIDDEN GIT FLAGS: --no-verify, --no-hooks, --no-pre-commit-hook
-Before using ANY git flag, you must:
-
-- State the flag you want to use
-- Explain why you need it
-- Confirm it's not on the forbidden list
-- Get explicit user permission for any bypass flags
-
-If you catch yourself about to use a forbidden flag, STOP immediately and follow the pre-commit failure protocol instead.
-
-3. Accountability Checkpoint
-
-Before executing any git command, ask yourself:
-
-- "Am I bypassing a safety mechanism?"
-- "Would this action violate the user's CLAUDE.md instructions?"
-- "Am I choosing convenience over quality?"
-
-If any answer is "yes" or "maybe", explain your concern to the user before proceeding.
-
-4. Learning-Focused Error Response
-
-When encountering tool failures (biome, ruff, pytest, etc.):
-
-- Treat each failure as a learning opportunity, not an obstacle
-- Research the specific error before attempting fixes
-- Explain what you learned about the tool/codebase
-- Build competence with development tools rather than avoiding them
-
-Remember: Quality tools are guardrails that help you, not barriers that block you.
-
-# Other important things
-
-- Timeout and gtimeout are often not installed, do not try and use them
-- When searching or modifying code, you must use `ast-grep` (sg). It is way better than `grep`, `ripgrep`, `ag`, `sed`, or regex-only tools. `ast-grep` is superior because it matches against the abstract syntax tree (AST) and allows safe, language-aware queries and rewrites.
-- Always prefer `sg` for code analysis, queries, or refactoring tasks.
-- NEVER disable functionality instead of fixing the root cause problem
-- NEVER claim something is "working" when functionality is disabled or broken
-- If you discover an unrelated bug, please document it and fix it when done with the current bug. Don't say "everything is done, EXCEPT there is a bug"
-- Humuhumu means "I see, thanks!"
+Before using ANY unfamiliar git flag, state it, explain why you need it, and confirm it's not on the forbidden list.
 
 # Templating
 
@@ -155,10 +132,18 @@ Remember: Quality tools are guardrails that help you, not barriers that block yo
 - ALWAYS use one shared template instead of maintaining duplicates
 - WHEN facing template issues, debug the actual problem rather than creating workarounds
 
-Problem-Solving Approach:
+# Other important things
+
+- Timeout and gtimeout are often not installed, do not try and use them
+- When searching or modifying code, you must use `ast-grep` (sg). It is way better than `grep`, `ripgrep`, `ag`, `sed`, or regex-only tools. `ast-grep` is superior because it matches against the abstract syntax tree (AST) and allows safe, language-aware queries and rewrites.
+- Batch independent file reads and tool calls in parallel instead of sequentially - small per-call savings compound across a session.
+- Always prefer `sg` for code analysis, queries, or refactoring tasks.
+- When choosing port numbers for new services, make them thematically related and memorable (leet-speak, pop culture, or project-relevant numbers). Keep infrastructure defaults boring (NATS, databases, etc.). The goal is to cleanly avoid all regularly used ports (8080, 8081, etc)
+- Humuhumu means "I see, thanks!"
+
+# Problem-Solving Approach:
 
 - FIX problems, don't work around them
 - MAINTAIN code quality and avoid technical debt
 - USE proper debugging to find root causes
 - AVOID shortcuts that break user experience
-- When choosing port numbers for new services, make them thematically related and memorable (leet-speak, pop culture, or project-relevant numbers). Keep infrastructure defaults boring (NATS, databases, etc.). The goal is to cleanly avoid all regularly used ports (8080, 8081, etc)

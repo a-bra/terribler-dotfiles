@@ -1,0 +1,75 @@
+{
+  "cleanupPeriodDays": 999,
+  "permissions": {
+    "allow": [
+      "List_recent_entries",
+      "mcp__private-journal__process_thoughts",
+      "mcp__private-journal__search_journal",
+      "mcp__private-journal__read_journal_entry",
+      "mcp__private-journal__list_recent_entries",
+      "Bash(cat:*)",
+      "WebSearch",
+      "Bash(bun install:*)",
+      "Bash(npx vitest:*)",
+      "Bash(npx prettier:*)",
+      "Bash(npx eslint:*)",
+      "mcp__plugin_episodic-memory_episodic-memory__search",
+      "mcp__plugin_episodic-memory_episodic-memory__read",
+      "Bash(grep:*)",
+      "Bash(npx tsc:*)"
+    ],
+    "deny": [
+      "Read(**/.env)",
+      "Read(**/.env.*)",
+      "Read(**/.env.local)",
+      "Read(**/.env.development)",
+      "Read(**/.env.production)",
+      "Read(**/.env.test)",
+      "Read(**/secrets/**)"
+    ],
+    "ask": [],
+    "defaultMode": "default",
+    "disableBypassPermissionsMode": "disable"
+  },
+  "model": "opus[1m]",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Grep|Glob|Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node '/home/abravakis/.claude/hooks/gitnexus/gitnexus-hook.cjs'",
+            "timeout": 10,
+            "statusMessage": "Enriching with GitNexus graph context..."
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node '/home/abravakis/.claude/hooks/gitnexus/gitnexus-hook.cjs'",
+            "timeout": 10,
+            "statusMessage": "Checking GitNexus index freshness..."
+          }
+        ]
+      }
+    ]
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "python3 ~/.claude/statusline.py",
+    "padding": 0
+  },
+  "enabledPlugins": {
+    "episodic-memory@superpowers-marketplace": true
+  },
+  "alwaysThinkingEnabled": true,
+  "effortLevel": "high",
+  "promptSuggestionEnabled": false,
+  "autoUpdatesChannel": "latest"
+}

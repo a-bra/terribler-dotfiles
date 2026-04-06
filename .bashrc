@@ -1,1 +1,0 @@
-.bashrc##os.Linux,hostname.EA-MDM-PF5D12LB

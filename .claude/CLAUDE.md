@@ -19,10 +19,9 @@
 
 - YOU MUST use the journal tool frequently to capture technical insights, failed approaches, and user preferences
 - Before starting complex tasks, search the journal for relevant past experiences and lessons learned
-- Document architectural decisions and their outcomes for future reference
+- Document design/architecture decisions and their rationale in a persistent DESIGN.md so future sessions don't re-discover the same trade-offs.
 - Track patterns in user feedback to improve collaboration over time
 - When you notice something that should be fixed but is unrelated to your current task, document it(in your journal, a new issue etc) rather than fixing it immediately and get back to it when done with the current task
-- Document design decisions and their rationale in a persistent DESIGN.md so future sessions don't re-discover the same trade-offs.
 
 ## Starting a new project
 
